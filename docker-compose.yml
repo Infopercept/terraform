@@ -7,48 +7,15 @@ networks:
 volumes:
   invinsense-db:
   invinsense-code:
-  # simplerisk-code:
-  # simplerisk-db:
-  # RukovoditelWEB:
-  # RukovoditelDB:
-
 
 services:
-
-  # rukovoditelweb:
-  #   image: infopercept/projectmanagement:latest
-  #   #image: infopercept/rukovoditel:v1
-  #   volumes:
-  #     - RukovoditelWEB:/var/www/html
-  #   networks:
-  #     - frontend
-  #     - backend
-  #   depends_on:
-  #     - rukovoditeldb
-  #   ports:
-  #     - "8080:80"
-  # rukovoditeldb:
-  #   command: mysqld --sql_mode="NO_ENGINE_SUBSTITUTION"
-  #   image: mariadb:10.5
-  #   volumes:
-  #     - RukovoditelDB:/var/lib/mysql
-  #   networks:
-  #     - backend
-  #   ports:
-  #     - 3309:3306
-  #   environment:
-  #     - MYSQL_ROOT_PASSWORD=root-secret
-  #     - MYSQL_USER=ruser
-  #     - MYSQL_PASSWORD=secret
-  #     - MYSQL_DATABASE=rukovoditel
-
   invinsensedb:
     command: mysqld --sql_mode="NO_ENGINE_SUBSTITUTION"
     environment:
-    - MYSQL_ROOT_PASSWORD=redhat
-    - MYSQL_DATABASE=invinsense
-    - MYSQL_USER=admin
-    - MYSQL_PASSWORD=redhat
+      - MYSQL_ROOT_PASSWORD=redhat
+      - MYSQL_DATABASE=invinsense
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=redhat
     image: mariadb:10.5
     networks:
       - backend
@@ -70,34 +37,11 @@ services:
     ports:
       - 9010:80
 
-  # simplerisk:
-  #   restart: always
-  #   volumes:
-  #     - simplerisk-code:/var/www/simplerisk
-  #   environment:
-  #   - FIRST_TIME_SETUP=0
-  #   - FIRST_TIME_SETUP_PASS=redhat
-  #   - SIMPLERISK_DB_HOSTNAME=mariadb
-  #   #image: simplerisk/simplerisk:latest
-  #   image: infopercept/riskmanagement:latest
-  #   networks:
-  #     - frontend
-  #     - backend
-  #   ports:
-  #   - 8081:80
-  #   - 8082:443
-
-  # simplerisk-db:
-  #   command: mysqld --sql_mode="NO_ENGINE_SUBSTITUTION"
-  #   environment:
-  #   - MYSQL_ROOT_PASSWORD=redhat
-  #   - MYSQL_DATABASE=simplerisk-db
-  #   - MYSQL_USER=admin
-  #   - MYSQL_PASSWORD=redhat
-  #   image: mariadb:10.5
-  #   networks:
-  #     - backend
-  #   volumes:
-  #     - "simplerisk-db:/var/lib/mysql"
-  #   ports:
-  #     - 3306:3306
+  simplerisk:
+    image: yashp22091/simplerisk-testing:latest
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - frontend
