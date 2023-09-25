@@ -1,37 +1,53 @@
-version: '3'
-
-volumes:
-  mariadb_data:
-      driver: local
+version: '3.8'
 
 services:
+
   mariadb:
-      image: mariadb
-      volumes:
-        - mariadb_data:/var/lib/mysql
-      environment:
-        MYSQL_ROOT_PASSWORD: root
-        MYSQL_DATABASE: keycloak
-        MYSQL_USER: keycloak
-        MYSQL_PASSWORD: password
-        #TZ: Asia/Kolkata
-      #ports:
-      #  - 3306:3306
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: keycloak
+      MYSQL_USER: keycloak
+      MYSQL_PASSWORD: password
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
   keycloak:
-      #image: quay.io/keycloak/keycloak:latest
-      image: jboss/keycloak:latest
-      environment:
-        DB_VENDOR: mariadb
-        DB_ADDR: mariadb
-        DB_DATABASE: keycloak
-        DB_USER: keycloak
-        DB_PASSWORD: password
-        KEYCLOAK_USER: admin
-        KEYCLOAK_PASSWORD: Pa55w0rd
-        #TZ: Asia/Kolkata
-        # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the MySQL JDBC driver documentation in order to use it.
-        #JDBC_PARAMS: "connectTimeout=30000"
-      ports:
-        - 8080:8080
-      depends_on:
-        - mariadb
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      KC_HTTPS_KEY_STORE_FILE: /etc/x509/https/tls.jks
+      KC_HTTPS_KEY_STORE_PASSWORD: password
+      KC_HTTPS_KEY_STORE_TYPE: JKS
+      KC_CERTIFICATE_KEY_ALIAS: keycloak
+      KC_PROXY: edge
+      KC_DB: mariadb
+      KC_DB_URL_HOST: mariadb
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_URL_PORT: 3306
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_TRANSACTION_XA_ENABLED: 'true'
+      KC_HEALTH_ENABLED: 'true'
+      KC_METRICS_ENABLED: 'true'
+      KEYCLOAK_THIRD_PARTY_COOKIES: 'false'
+
+    volumes:
+      - certs:/etc/x509/https
+    ports:
+      - 8443:8443
+    depends_on:
+      - cert-generator
+      - mariadb
+    command: "start --hostname-strict=false -Dkeycloak.profile.feature.upload_scripts=enabled"
+
+  cert-generator:
+    image: alpine:latest
+    volumes:
+      - certs:/etc/x509/https
+    command: /bin/sh -c "apk add --no-cache openssl && openssl genrsa -out /etc/x509/https/tls.key 2048 && openssl req -new -x509 -key /etc/x509/https/tls.key -out /etc/x509/https/tls.crt -days 3650 -subj '/CN=localhost' && openssl pkcs12 -export -name keycloak -in /etc/x509/https/tls.crt -inkey /etc/x509/https/tls.key -out /etc/x509/https/tls.jks -password pass:password && chown 1000:1000 /etc/x509/https/*"
+
+volumes:
+  certs:
+  mariadb_data:
