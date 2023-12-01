@@ -32,6 +32,7 @@ services:
       KC_HEALTH_ENABLED: 'true'
       KC_METRICS_ENABLED: 'true'
       KEYCLOAK_THIRD_PARTY_COOKIES: 'false'
+      KC_SPI_THEME_DEFAULT: 'invinsense'
 
     volumes:
       - certs:/etc/x509/https
