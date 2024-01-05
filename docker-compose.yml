@@ -1,13 +1,14 @@
 version: "3.7"
-
+ 
 networks:
   frontend:
   backend:
-
+ 
 volumes:
   invinsense-db:
   invinsense-code:
-
+  certs:
+ 
 services:
   invinsensedb:
     command: mysqld --sql_mode="NO_ENGINE_SUBSTITUTION"
@@ -23,25 +24,34 @@ services:
       - "invinsense-db:/var/lib/mysql"
     ports:
       - 3308:3306
-
+ 
   invinsense:
     image: infopercept/gsos_dev:latest
     restart: unless-stopped
     depends_on:
       - invinsensedb
+      - cert-generator
     volumes:
       - invinsense-code:/var/www/html
+      - certs:/etc/ssl/private
     networks:
       - frontend
       - backend
     ports:
       - 9010:80
-
+      - 9443:443
+ 
   simplerisk:
-    image: yashp22091/simplerisk-testing:latest
+    image: infopercept/riskmanagement_dev:latest
     restart: unless-stopped
     ports:
-      - 80:80
       - 443:443
     networks:
       - frontend
+      - backend
+     
+  cert-generator:
+    image: alpine:latest
+    volumes:
+      - certs:/etc/ssl/private
+    command: /bin/sh -c "apk add --no-cache openssl && openssl genrsa -out /etc/ssl/private/tls.key 2048 && openssl req -new -x509 -key /etc/ssl/private/tls.key -out /etc/ssl/private/tls.crt -days 3650 -subj '/CN=localhost' && openssl pkcs12 -export -name gsos -in /etc/ssl/private/tls.crt -inkey /etc/ssl/private/tls.key -out /etc/ssl/private/tls.jks -password pass:password && chown 1000:1000 /etc/ssl/private/*"
