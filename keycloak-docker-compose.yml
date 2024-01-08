@@ -38,6 +38,7 @@ services:
       - certs:/etc/x509/https
     ports:
       - 8443:8443
+      - 8080:8080
     depends_on:
       - cert-generator
       - mariadb
