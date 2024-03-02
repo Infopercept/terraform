@@ -1,0 +1,23 @@
+version: "2"
+services:
+  elasticsearch:
+    image: elasticsearch:7.8.1
+    environment:
+      - http.host=0.0.0.0
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+
+  cortex:
+    image: infopercept/cortex:1.0
+    depends_on:
+      - elasticsearch
+    ports:
+      - "0.0.0.0:9001:9001"
+	 
+  thehive:
+    image: infopercept/thehive:1.0
+    depends_on:
+      - elasticsearch
+    ports:
+      - "0.0.0.0:9000:9000"
