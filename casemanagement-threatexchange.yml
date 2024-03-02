@@ -14,7 +14,7 @@ services:
       - elasticsearch
     ports:
       - "0.0.0.0:9001:9001"
-	 
+      
   thehive:
     image: infopercept/thehive:1.0
     depends_on:
